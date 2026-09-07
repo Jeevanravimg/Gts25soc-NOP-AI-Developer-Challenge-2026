@@ -1,3 +1,6 @@
+# Created by: Jeevan M G
+# Date: 05-09-2026
+# Explanation: Event evidence is captured here as image snapshots, event logs, and schema-validated JSON payloads.
 import csv
 import json
 import os
@@ -13,9 +16,7 @@ np_ndarray = Any
 
 
 class EvidenceWriter:
-    """
-    Manages structured evidence generation adhering to NOP Pro+ evidence contracts.
-    """
+    
 
     def __init__(
         self,
@@ -68,30 +69,28 @@ class EvidenceWriter:
         frame_time_s: float,
         frame_idx: int,
     ) -> Dict[str, Any]:
-        """
-        Records a detected event, generates the visual snapshot, writes JSONL & CSV records.
-        """
+        
         event_type = event["event_type"]
         track_id = track["track_id"]
         confidence = float(track.get("confidence", 0.90))
         object_type = track.get("object_type", "package")
         event_id = event.get("event_id", f"evt-{len(self.events_log) + 1:04d}")
 
-        # Update event counts
+        
         self.counts[event_type] = self.counts.get(event_type, 0) + 1
 
-        # Generate evidence snapshot image
+        
         obs_id = str(uuid.uuid4())
         image_filename = f"{event_id}_{obs_id[:8]}.jpg"
         image_full_path = self.evidence_dir / image_filename
         rel_image_path = os.path.relpath(image_full_path, self.output_dir).replace("\\", "/")
 
-        # Annotate snapshot frame
+        
         snap_frame = frame.copy()
         x, y, w, h = track.get("bbox", [0, 0, 50, 50])
         cv2.rectangle(snap_frame, (x, y), (x + w, y + h), (0, 255, 255), 3)
 
-        # Draw event header banner
+        
         banner_text = f"EVENT: {event_type} | TRACK: {track_id} | TIME: {frame_time_s:.2f}s"
         cv2.rectangle(snap_frame, (10, 10), (10 + len(banner_text) * 11, 42), (0, 0, 0), -1)
         cv2.putText(
@@ -133,18 +132,18 @@ class EvidenceWriter:
             },
         }
 
-        # Validate against JSON schema if present
+        
         if self.schema:
             try:
                 jsonschema.validate(instance=record, schema=self.schema)
             except Exception as e:
                 print(f"[EvidenceWriter] Schema validation warning: {e}")
 
-        # Append to JSONL
+        
         with open(self.jsonl_path, "a", encoding="utf-8") as jf:
             jf.write(json.dumps(record) + "\n")
 
-        # Record for all_events.csv
+        
         all_csv_path = self.output_dir / "all_events.csv"
         csv_row = {
             "scenario_id": self.scenario_id,
@@ -158,7 +157,7 @@ class EvidenceWriter:
         }
         self._append_to_csv(all_csv_path, csv_row)
 
-        # Record for events.csv (directional transition events for evaluation against ground truth)
+        
         if "TO" in event_type.upper() or event_type.upper() in ("A_TO_B", "B_TO_A", "LINE_CROSSING"):
             self.events_log.append(csv_row)
             self._flush_csv()

@@ -1,3 +1,6 @@
+# Created by: Jeevan M G
+# Date: 05-09-2026
+# Explanation: The analytics layer summarizes occupancy, dwell timing, and speed data for each scenario.
 from typing import Dict, List, Any, Tuple, Optional, Union
 import json
 from pathlib import Path
@@ -7,13 +10,7 @@ Optional_Path = Optional[Union[str, Path]]
 
 
 class VMSAnalytics:
-    """
-    Computes warehouse/VMS operational metrics:
-    - Queue occupancy timeline and peak queue length
-    - Dwell time distributions per zone
-    - Average object speeds and journey transit durations
-    """
-
+    
     def __init__(self, scenario_id: str, fps: float = 25.0):
         self.scenario_id = scenario_id
         self.fps = fps

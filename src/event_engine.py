@@ -1,9 +1,15 @@
+# Created by: Jeevan M G
+# Date: 05-09-2026
 from typing import Dict, List, Set, Optional, Any, Tuple
 import uuid
 
 
+# Explanation: This engine tracks each object journey across zones and raises dwell or transition events
+# when the object enters or remains in designated detection areas.
+
+
 class TrackJourney:
-    """Maintains the temporal spatial journey history for a single object track."""
+    
 
     def __init__(self, track_id: int, initial_zone: Optional[str], initial_time_s: float):
         self.track_id = track_id
@@ -28,11 +34,7 @@ class TrackJourney:
 
 
 class EventEngine:
-    """
-    Stateful event reasoning engine.
-    Detects macro-transitions (A->B, B->A) even through intermediate zones (e.g., QUEUE),
-    tracks dwell metrics, and suppresses false duplicates.
-    """
+    
 
     def __init__(
         self,
@@ -63,14 +65,14 @@ class EventEngine:
         journey = self.journeys[track_id]
         prev_zone = journey.current_zone
 
-        # 1. Update zone transition state
+        
         if current_zone != prev_zone:
-            # Handle exit of prev_zone
+            
             if prev_zone and prev_zone in journey.dwell_states:
                 d_state = journey.dwell_states[prev_zone]
                 d_state["total_dwell"] += max(0.0, frame_time_s - d_state["entered_at"])
 
-            # Handle entry of current_zone
+            
             if current_zone:
                 journey.visited_zones.append((current_zone, frame_time_s))
                 if current_zone not in journey.dwell_states:
@@ -82,7 +84,7 @@ class EventEngine:
                 else:
                     journey.dwell_states[current_zone]["entered_at"] = frame_time_s
 
-                # If track never had a terminal origin, assign first visited terminal zone
+                
                 if journey.last_terminal_zone is None and current_zone in self.terminal_zones:
                     journey.last_terminal_zone = current_zone
                     if journey.origin_zone is None:

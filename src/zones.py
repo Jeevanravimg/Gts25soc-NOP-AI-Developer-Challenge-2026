@@ -1,11 +1,15 @@
-
+# Created by: Jeevan M G
+# Date: 05-09-2026
 from typing import Dict, List, Tuple, Union, Optional, Any
 import cv2
 import numpy as np
 
 
+# Explanation: Zone geometry and lookup helpers identify which detection area a track is currently in.
+
+
 class Zone:
-    """Represents a discrete spatial zone (polygon or bounding box)."""
+    
 
     def __init__(self, name: str, geometry: Union[List[int], List[List[int]], List[Tuple[int, int]]], color: Tuple[int, int, int] = (120, 120, 120)):
         self.name = name
@@ -14,11 +18,11 @@ class Zone:
         self.bbox = self._compute_bbox()
 
     def _parse_geometry(self, geometry: Any) -> np.ndarray:
-        # Check if rect format [x1, y1, x2, y2]
+        
         if isinstance(geometry, (list, tuple)) and len(geometry) == 4 and isinstance(geometry[0], (int, float)):
             x1, y1, x2, y2 = geometry
             return np.array([[x1, y1], [x2, y1], [x2, y2], [x1, y2]], dtype=np.int32)
-        # Otherwise list of points [[x1, y1], [x2, y2], ...]
+        
         return np.array(geometry, dtype=np.int32)
 
     def _compute_bbox(self) -> Tuple[int, int, int, int]:
@@ -29,7 +33,7 @@ class Zone:
         return x1, y1, x2, y2
 
     def contains_point(self, point: Tuple[Union[int, float], Union[int, float]]) -> bool:
-        """Tests if a 2D point (x, y) is strictly inside or on boundary of zone."""
+        
         px, py = float(point[0]), float(point[1])
         x1, y1, x2, y2 = self.bbox
         if not (x1 <= px <= x2 and y1 <= py <= y2):
@@ -37,21 +41,21 @@ class Zone:
         return cv2.pointPolygonTest(self.polygon, (px, py), False) >= 0
 
     def intersects_bbox(self, bbox: List[int]) -> bool:
-        """Tests if an object's bounding box [x, y, w, h] overlaps with the zone."""
+        
         bx1, by1, bw, bh = bbox
         bx2, by2 = bx1 + bw, by1 + bh
         x1, y1, x2, y2 = self.bbox
-        # Fast bounding box intersection check
+        
         if bx2 < x1 or bx1 > x2 or by2 < y1 or by1 > y2:
             return False
-        # Centroid check
+        
         cx = bx1 + bw / 2.0
         cy = by1 + bh / 2.0
         return self.contains_point((cx, cy))
 
 
 class ZoneManager:
-    """Manages multi-zone configurations and spatial membership."""
+    
 
     DEFAULT_COLORS = {
         "A": (60, 160, 240),      # Amber/Orange
@@ -68,14 +72,14 @@ class ZoneManager:
             self.zones[name] = Zone(name, geom, color)
 
     def locate_point(self, point: Tuple[Union[int, float], Union[int, float]]) -> Optional[str]:
-        """Returns the name of the first zone containing the point."""
+        
         for name, zone in self.zones.items():
             if zone.contains_point(point):
                 return name
         return None
 
     def locate_bbox(self, bbox: List[int]) -> Optional[str]:
-        """Returns the name of the zone containing the centroid, or overlapping."""
+        
         cx = bbox[0] + bbox[2] / 2.0
         cy = bbox[1] + bbox[3] / 2.0
         zone = self.locate_point((cx, cy))
@@ -87,7 +91,7 @@ class ZoneManager:
         return None
 
     def draw(self, frame: np.ndarray, alpha: float = 0.15) -> np.ndarray:
-        """Draws translucent zone overlays with crisp borders and labels."""
+        
         overlay = frame.copy()
         for name, zone in self.zones.items():
             cv2.fillPoly(overlay, [zone.polygon], zone.color)

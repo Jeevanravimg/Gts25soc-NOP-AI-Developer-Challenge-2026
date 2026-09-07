@@ -1,3 +1,7 @@
+# Created by: Jeevan M G
+# Date: 05-09-2026
+# Explanation: This module detects package-like objects using background subtraction, morphology,
+# and color-based filtering tailored to the synthetic surveillance challenge scenes.
 
 from typing import List, Dict, Any, Optional, Tuple
 import cv2
@@ -5,16 +9,16 @@ import numpy as np
 
 
 PALETTE_BGR = [
-    (70, 170, 255),   # Orange (H~16)
-    (120, 220, 120),  # Green (H~60)
-    (230, 150, 80),   # Blue (H~106)
-    (180, 100, 230),  # Purple (H~162)
-    (80, 210, 210),   # Yellow (H~30)
+    (70, 170, 255),   
+    (120, 220, 120),  
+    (230, 150, 80),   
+    (180, 100, 230),  
+    (80, 210, 210),   
 ]
 
 
 def get_dominant_hue(bgr_crop: np.ndarray) -> float:
-    """Extracts the median hue of the inner colored region, filtering border artifacts."""
+    
     if bgr_crop.size == 0:
         return -1.0
     hsv = cv2.cvtColor(bgr_crop, cv2.COLOR_BGR2HSV)
@@ -27,7 +31,7 @@ def get_dominant_hue(bgr_crop: np.ndarray) -> float:
 
 
 def apply_nms(detections: List[Dict[str, Any]], iou_threshold: float = 0.4) -> List[Dict[str, Any]]:
-    """Applies Non-Maximum Suppression to remove duplicate bounding boxes."""
+    
     if not detections:
         return []
     boxes = [d["bbox"] for d in detections]
@@ -44,19 +48,14 @@ def apply_nms(detections: List[Dict[str, Any]], iou_threshold: float = 0.4) -> L
 
 
 class BaseDetector:
-    """Abstract interface for video object detectors."""
+    
 
     def detect(self, frame: np.ndarray, frame_idx: int = 0) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
 
 class AdaptiveDetector(BaseDetector):
-    """
-    Production-grade adaptive detector for structured and semi-structured video.
-    Combines background subtraction, color saliency, morphology, multi-object color
-    decomposition, dominant hue extraction, and NMS to reliably detect objects even
-    during dense crossings and prolonged stops.
-    """
+    
 
     def __init__(
         self,
@@ -198,10 +197,7 @@ class AdaptiveDetector(BaseDetector):
 
 
 class PretrainedDnnDetector(BaseDetector):
-    """
-    OpenCV DNN wrapper for ONNX/Caffe models (e.g., MobileNet-SSD, YOLO) for realistic
-    surveillance camera footage (people, vehicles, packages).
-    """
+    
 
     def __init__(
         self,
@@ -252,7 +248,7 @@ class PretrainedDnnDetector(BaseDetector):
 
 
 def create_detector(config: Dict[str, Any]) -> BaseDetector:
-    """Factory function to instantiate the configured detector."""
+    
     det_type = config.get("detector_type", "adaptive")
     if det_type == "dnn" and config.get("model_path"):
         return PretrainedDnnDetector(

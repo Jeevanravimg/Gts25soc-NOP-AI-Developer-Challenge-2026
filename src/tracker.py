@@ -1,4 +1,5 @@
-
+# Created by: Jeevan M G
+# Date: 05-09-2026
 from enum import Enum
 from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
@@ -13,7 +14,7 @@ class TrackState(Enum):
 
 
 def hue_distance(h1: float, h2: float) -> float:
-    """Calculates minimal circular distance between two hues on [0, 180] scale."""
+    
     if h1 < 0 or h2 < 0:
         return 0.0
     d = abs(h1 - h2)
@@ -21,11 +22,7 @@ def hue_distance(h1: float, h2: float) -> float:
 
 
 class KalmanBoxTracker:
-    """
-    Constant-velocity Kalman Filter for 2D bounding boxes:
-    State vector: [cx, cy, w, h, vx, vy, vw, vh]
-    Measurement vector: [cx, cy, w, h]
-    """
+    
 
     def __init__(self, bbox: List[int], color_feat: Optional[np.ndarray] = None):
         x, y, w, h = bbox
@@ -45,7 +42,7 @@ class KalmanBoxTracker:
         for i in range(4):
             self.H[i, i] = 1.0
 
-        # Covariance matrices
+        
         self.P = np.diag([10.0, 10.0, 10.0, 10.0, 100.0, 100.0, 10.0, 10.0]).astype(np.float32)
         self.Q = np.diag([1.0, 1.0, 1.0, 1.0, 4.0, 4.0, 1.0, 1.0]).astype(np.float32)
         self.R = np.diag([4.0, 4.0, 10.0, 10.0]).astype(np.float32)
@@ -57,7 +54,7 @@ class KalmanBoxTracker:
         self.time_since_update = 0
 
     def predict(self) -> np.ndarray:
-        """Projects state and covariance forward by one time step."""
+        
         self.x = np.dot(self.F, self.x)
         self.P = np.dot(np.dot(self.F, self.P), self.F.T) + self.Q
         self.age += 1
@@ -70,7 +67,7 @@ class KalmanBoxTracker:
         return self.get_bbox()
 
     def update(self, bbox: List[int], confidence: float, color_feat: Optional[np.ndarray] = None):
-        """Updates filter with an observed measurement."""
+        
         x, y, w, h = bbox
         cx = x + w / 2.0
         cy = y + h / 2.0
@@ -99,7 +96,7 @@ class KalmanBoxTracker:
                     self.color_feat /= norm
 
     def get_bbox(self) -> List[int]:
-        """Returns [x, y, w, h] integer bounding box."""
+        
         cx, cy, w, h = self.x[:4, 0]
         w = max(10, int(round(w)))
         h = max(10, int(round(h)))
@@ -128,11 +125,12 @@ def compute_iou(box1: List[int], box2: List[int]) -> float:
     return inter / float(max(1, union))
 
 
+# Explanation: This tracker combines Kalman prediction with centroid matching and hue gating to keep
+# object identities stable across challenging frame-to-frame motion and partial occlusion.
+
+
 class RobustKalmanTracker:
-    """
-    Industrial Multi-Object Tracker with Kalman filtering, occlusion coasting,
-    and appearance/Hue-gated Hungarian matching.
-    """
+    
 
     def __init__(
         self,
@@ -151,7 +149,7 @@ class RobustKalmanTracker:
         self.track_metadata: Dict[int, Dict[str, Any]] = {}
 
     def update(self, detections: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
-        # 1. Predict all current tracks
+        
         for tid, tracker in self.trackers.items():
             tracker.predict()
 
@@ -209,7 +207,7 @@ class RobustKalmanTracker:
                     matched_tracks.add(tid)
                     matched_dets.add(c)
 
-        # 2. Handle unmatched tracks (coasting / deletion)
+        
         for tid in track_ids:
             if tid not in matched_tracks:
                 trk = self.trackers[tid]
@@ -220,7 +218,7 @@ class RobustKalmanTracker:
                 else:
                     self.track_metadata[tid]["state"] = TrackState.COASTING
 
-        # 3. Create new tracks for unmatched detections
+        
         for j, det in enumerate(detections):
             if j not in matched_dets:
                 tid = self.next_track_id
@@ -234,7 +232,7 @@ class RobustKalmanTracker:
                     "hue": det.get("hue", -1.0),
                 }
 
-        # 4. Prepare active return tracks
+        
         active_tracks: Dict[int, Dict[str, Any]] = {}
         for tid, trk in self.trackers.items():
             meta = self.track_metadata[tid]

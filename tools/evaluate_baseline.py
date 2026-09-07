@@ -1,3 +1,8 @@
+# Created by: Jeevan M G
+# Date: 05-09-2026
+# Explanation: This baseline evaluator checks output quality across scenarios by comparing expected and
+# predicted event totals while preparing a compact summary report.
+
 import os
 import json
 import csv

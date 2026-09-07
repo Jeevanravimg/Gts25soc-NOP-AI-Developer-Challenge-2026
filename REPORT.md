@@ -172,7 +172,6 @@ The repository reflects a standard local Python development workflow, including:
 - pip-based dependency installation
 - OpenCV and scientific Python stack for image processing and analysis
 - Streamlit for the review dashboard
-- Plotly for charting
 - pytest for environment verification
 
 No separate machine-learning training pipeline, training logs, or custom GPU environment are included in the submission package.
@@ -187,7 +186,6 @@ The project depends on third-party components, including:
 - pandas
 - Pillow
 - Streamlit
-- Plotly
 - jsonschema
 - pytest
 

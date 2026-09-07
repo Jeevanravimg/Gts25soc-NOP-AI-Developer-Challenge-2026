@@ -30,7 +30,7 @@ The system produces:
 ## Runtime and language
 
 - Python 3.8.6 (verified in the project virtual environment)
-- Primary stack: Python, OpenCV, NumPy, SciPy, Pandas, Pillow, Streamlit, Plotly, jsonschema
+- Primary stack: Python, OpenCV, NumPy, SciPy, Pandas, Pillow, Streamlit, jsonschema
 - Test tooling present in the environment: pytest
 
 ## Exact setup commands
@@ -55,8 +55,17 @@ Run the pipeline on a prerecorded input video:
 
 ```powershell
 cd candidate-solution
-python src/main.py --input <path-to-video.mp4> --config config/s01_basic_goods.json --output-dir output/S01_BASIC_GOODS
+python -m src.main --input <path-to-video.mp4> --config config/s01_basic_goods.json --output-dir output/S01_BASIC_GOODS
 ```
+For the four provided public scenarios, the validated commands are:
+
+```powershell
+python -m src.main --input ..\data\generated\S01_BASIC_GOODS.mp4 --config config\s01_basic_goods.json
+python -m src.main --input ..\data\generated\S02_OCCLUSION_REVERSAL.mp4 --config config\s02_occlusion_reversal.json
+python -m src.main --input ..\data\generated\S03_DENSE_CROSSING.mp4 --config config\s03_dense_crossing.json
+python -m src.main --input ..\data\generated\S04_DWELL_QUEUE.mp4 --config config\s04_dwell_queue.json
+```
+
 
 Run the interactive review dashboard:
 
